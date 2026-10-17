@@ -1,0 +1,8 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { ArrowLeft, ArrowUpRight, MousePointer2 } from 'lucide-react';
+import { findPreview, previews } from '@/lib/previews';
+import { PreviewPlayer } from '@/components/preview-player';
+export function generateStaticParams(){return previews.map(p=>({slug:p.slug}))}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const p=findPreview((await params).slug);return {title:p?.title??'Exploration not found',description:p?.description}}
+export default async function PreviewPage({params}:{params:Promise<{slug:string}>}){const p=findPreview((await params).slug);if(!p)notFound();const related=previews.filter(x=>x.slug!==p.slug);return <main id="main" className="detail-page"><Link href="/#library" className="back-link"><ArrowLeft size={15}/> Back to explorations</Link><div className="detail-heading"><span className="eyebrow">FIG. {p.number} / {p.category.toUpperCase()}</span><h1>{p.title}</h1><p>{p.description}</p><div className="detail-meta"><span><MousePointer2 size={14}/> {p.format}</span><span>{p.duration}</span></div></div><PreviewPlayer source={p.source} title={p.title}/><section className="lesson-notes"><div><span className="eyebrow">THE BIG IDEA</span><h2>{p.takeaway}</h2></div><div><span className="eyebrow">TRY THIS</span><ol>{p.prompts.map(t=><li key={t}>{t}</li>)}</ol></div></section>{related.length>0&&<section className="up-next"><span className="eyebrow">KEEP THE CURIOSITY GOING</span>{related.map(p=><Link href={`/preview/${p.slug}`} key={p.slug}><img src={p.image} alt="" width={180} height={110}/><div><span>{p.category}</span><h3>{p.title}</h3></div><ArrowUpRight size={25}/></Link>)}</section>}</main>}
